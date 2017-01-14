@@ -1,2 +1,14 @@
 server:
   port: 10001
+# Redis properties
+spring:
+  redis:
+    name: 121.40.164.118
+    port: 6379
+    host: 121.40.164.118
+    password: torchchen
+    pool:
+      maxIdle: 8 # max idle connections in the pool
+      minIdle: 0 # min idle connections in the pool
+      maxActive: -1 # no limit to the number of active connections
+      maxWait: 30000

@@ -6,6 +6,9 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -25,6 +28,18 @@ public class WebsocketServiceApplication extends SpringBootServletInitializer
 	@Bean
 	public WebSocketHandler telecomWebSocketHandler() {
 		return new TelecomWebSocketHandler();
+	}
+
+	@Bean
+	public StringRedisTemplate redisTemplate(
+			RedisConnectionFactory redisConnectionFactory) {
+		StringRedisTemplate redisTemplate = new StringRedisTemplate(redisConnectionFactory);
+
+		GenericJackson2JsonRedisSerializer jackson2JsonRedisSerializer = new GenericJackson2JsonRedisSerializer();
+		redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
+		redisTemplate.afterPropertiesSet();
+
+		return redisTemplate;
 	}
 
 	public static void main(String[] args) {
