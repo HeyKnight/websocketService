@@ -19,18 +19,20 @@ public class TelecomWebSocketHandler extends TextWebSocketHandler {
 
     private static Logger log = LoggerFactory.getLogger(TelecomWebSocketHandler.class);
 
+    private static String userTel;
+
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         log.info("Received message: " + message.getPayload());
         System.out.println(session.getId() + "连接");
-        String key = message.getPayload();
+        userTel = message.getPayload();
 
-        template.opsForValue().set("websocketSessionId:" + session.getId(), key);
-        template.opsForValue().set("websocketUserInfo:" + key, key);
-        if (! template.hasKey("websocketCount:" + key))
-            template.opsForValue().set("websocketCount:" + key, 1);
+        template.opsForValue().set("websocketSessionId:" + session.getId(), userTel);
+        template.opsForValue().set("websocketUserInfo:" + userTel, userTel);
+        if (! template.hasKey("websocketCount:" + userTel))
+            template.opsForValue().set("websocketCount:" + userTel, 1);
         else
-            template.opsForValue().increment("websocketCount:" + key, 1L);
+            template.opsForValue().increment("websocketCount:" + userTel, 1L);
     }
 
     @Override
@@ -42,15 +44,12 @@ public class TelecomWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         System.out.println(session.getId() + "关闭连接");
-        String userTel = template.opsForValue().get("websocketSessionId:" + session.getId()).toString();
         template.delete("websocketSessionId:" + session.getId());
         template.opsForValue().increment("websocketCount:" + userTel, -1L);
-            if (!template.hasKey("websocketSessionId:" + session.getId())) {
-                template.delete("websocketUserInfo:" + userTel);
-                template.delete("websocketCount:" + userTel);
-            }
-//        }
+        if ((int)(template.opsForValue().get("websocketCount:" + userTel)) == 0)
+        if (! template.hasKey("websocketSessionId:" + session.getId())) {
+            template.delete("websocketUserInfo:" + userTel);
+            template.delete("websocketCount:" + userTel);
+        }
     }
-
-
 }

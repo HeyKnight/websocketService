@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
 
         String userStatus = "offline";
         if (! template.hasKey("websocketUserInfo:" + userTel))
-            template.opsForSet().add("websocketUserInfo:" + userTel, userTel);
+            template.opsForValue().set("websocketUserInfo:" + userTel, userTel);
         else
             userStatus = "online";
 
