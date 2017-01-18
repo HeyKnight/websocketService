@@ -18,21 +18,41 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private StringRedisTemplate template;
 
+    /**
+     * 校验用户是否在线
+     * @param userTel  用户号码
+     * @return online在线 or offline不在线
+     */
     @Override
     public String checkUserTelOnline(String userTel) {
-        ValueOperations<String, String> ops = template.opsForValue();
-
         String userStatus = "offline";
-        if (! template.hasKey("websocketUserInfo:" + userTel))
-            template.opsForValue().set("websocketUserInfo:" + userTel, userTel);
-        else
+        if (template.hasKey("websocketUserInfo:" + userTel))
             userStatus = "online";
-
         return userStatus;
     }
 
+    /**
+     * 校验phpSessionId是否在线
+     * @param userTel  用户号码
+     * @param phpSessionId  登陆的sessionId
+     * @return online在线 or offline不在线
+     */
+    @Override
+    public String checkPhpSessionIdOnline(String userTel, String phpSessionId) {
+        String userStatus = "offline";
+        if (template.hasKey("websocketUser:" + userTel) &&
+                !template.opsForValue().get("websocketUser:" + userTel).equals(phpSessionId))
+            userStatus = "online";
+        return userStatus;
+    }
+
+    /**
+     * 清除用户在线信息
+     * @param userTel  用户号码
+     */
     @Override
     public void removeUserOnline(String userTel) {
         template.delete("websocketUserInfo:" + userTel);
+        template.delete("websocketUser:" + userTel);
     }
 }

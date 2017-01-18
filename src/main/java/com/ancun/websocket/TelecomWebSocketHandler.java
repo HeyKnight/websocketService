@@ -9,6 +9,8 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Created by Ace on 2017/1/13.
  */
@@ -25,14 +27,24 @@ public class TelecomWebSocketHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         log.info("Received message: " + message.getPayload());
         System.out.println(session.getId() + "连接");
-        userTel = message.getPayload();
+        String messagePayload = message.getPayload();
 
-        template.opsForValue().set("websocketSessionId:" + session.getId(), userTel);
-        template.opsForValue().set("websocketUserInfo:" + userTel, userTel);
-        if (! template.hasKey("websocketCount:" + userTel))
-            template.opsForValue().set("websocketCount:" + userTel, 1);
-        else
-            template.opsForValue().increment("websocketCount:" + userTel, 1L);
+        String[] messages = messagePayload.split("_");
+        // php sessionId
+        String phpSessID = messages[0];
+        userTel = messages[1];
+
+        if (template.hasKey("websocketUserInfo:" + userTel) &&
+                !template.opsForValue().get("websocketUser:" + userTel).equals(phpSessID))
+            session.close();
+        else {
+            template.opsForValue().set("websocketUser:" + userTel, phpSessID);
+            // 添加websocket连接sessionId
+            template.opsForSet().add("websocketUserInfo:" + userTel, session.getId());
+            // 设置失效时间
+            template.expire("websocketUserInfo:" + userTel, 60 * 15 - 1, TimeUnit.SECONDS);
+        }
+
     }
 
     @Override
@@ -44,12 +56,10 @@ public class TelecomWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         System.out.println(session.getId() + "关闭连接");
-        template.delete("websocketSessionId:" + session.getId());
-        template.opsForValue().increment("websocketCount:" + userTel, -1L);
-        if ((int)(template.opsForValue().get("websocketCount:" + userTel)) == 0)
-        if (! template.hasKey("websocketSessionId:" + session.getId())) {
-            template.delete("websocketUserInfo:" + userTel);
-            template.delete("websocketCount:" + userTel);
-        }
+        // 删除断开连接的websocket相关信息
+        template.opsForSet().remove("websocketUserInfo:" + userTel, session.getId());
+        if (template.opsForSet().size("websocketUserInfo:" + userTel) == 0)
+            template.delete("websocketUser:" + userTel);
     }
+
 }

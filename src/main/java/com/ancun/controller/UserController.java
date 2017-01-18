@@ -1,5 +1,7 @@
 package com.ancun.controller;
 
+import com.ancun.pojo.CheckPhpSessionIdOnlineInput;
+import com.ancun.pojo.CheckUserTelOnlineInput;
 import com.ancun.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -18,20 +20,30 @@ public class UserController {
 
     /**
      * 检查用户是否在线
-     * @param userTel  用户号码
-     * @return
+     * @param input  用户号码input
+     * @return  online在线 or offline不在线
      */
-    @RequestMapping(value = "/checkUserTelOnline/{userTel}", method = RequestMethod.POST)
-    public @ResponseBody String checkUserTelOnline(@PathVariable String userTel) {
-        return userService.checkUserTelOnline(userTel);
+    @RequestMapping(value = "/checkUserTelOnline", method = RequestMethod.POST)
+    public @ResponseBody String checkUserTelOnline(@RequestBody CheckUserTelOnlineInput input) {
+        return userService.checkUserTelOnline(input.getUserTel());
+    }
+
+    /**
+     * 校验phpSessionId是否在线
+     * @param input  用户号码and用户登录后的phpSessionId
+     * @return  online在线 or offline不在线
+     */
+    @RequestMapping(value = "/checkPhpSessionIdOnline", method = RequestMethod.POST)
+    public @ResponseBody String checkPhpSessionIdOnline(@RequestBody CheckPhpSessionIdOnlineInput input) {
+        return userService.checkPhpSessionIdOnline(input.getUserTel(), input.getPhpSessionId());
     }
 
     /**
      * 清除用户在线信息
-     * @param userTel
+     * @param input  用户号码input
      */
-    @RequestMapping(value = "/removeUserOnline/{userTel}", method = RequestMethod.POST)
-    public void removeUserOnline(@PathVariable String userTel) {
-        userService.removeUserOnline(userTel);
+    @RequestMapping(value = "/removeUserOnline", method = RequestMethod.POST)
+    public void removeUserOnline(@RequestBody CheckUserTelOnlineInput input) {
+        userService.removeUserOnline(input.getUserTel());
     }
 }
