@@ -3,14 +3,19 @@ server:
 # Redis properties
 spring:
   redis:
+    database: 1
     name: 121.40.164.118
     port: 6379
     host: 121.40.164.118
-    password: torchchen
+    password: 123456
     pool:
-      maxIdle: 8 # max idle connections in the pool
-      minIdle: 0 # min idle connections in the pool
+      maxIdle: 36 # max idle connections in the pool
+      minIdle: 6 # min idle connections in the pool
       maxActive: -1 # no limit to the number of active connections
       maxWait: 30000
-    database: 1
+#security:
+#  user:
+#    name: user
+#    password: www
+
 

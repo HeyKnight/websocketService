@@ -23,6 +23,8 @@ public class TelecomWebSocketHandler extends TextWebSocketHandler {
 
     private static String userTel;
 
+    private static String phpSessId;
+
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         log.info("Received message: " + message.getPayload());
@@ -31,14 +33,15 @@ public class TelecomWebSocketHandler extends TextWebSocketHandler {
 
         String[] messages = messagePayload.split("_");
         // php sessionId
-        String phpSessID = messages[0];
+        phpSessId = messages[0];
         userTel = messages[1];
 
+        // 防止已登陆浏览器未退出登录关闭后重新进去时的重复连接
         if (template.hasKey("websocketUserInfo:" + userTel) &&
-                !template.opsForValue().get("websocketUser:" + userTel).equals(phpSessID))
+                !template.opsForValue().get("websocketUser:" + userTel).equals(phpSessId))
             session.close();
         else {
-            template.opsForValue().set("websocketUser:" + userTel, phpSessID);
+            template.opsForValue().set("websocketUser:" + userTel, phpSessId);
             // 添加websocket连接sessionId
             template.opsForSet().add("websocketUserInfo:" + userTel, session.getId());
             // 设置失效时间
