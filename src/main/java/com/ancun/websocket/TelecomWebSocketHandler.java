@@ -42,6 +42,8 @@ public class TelecomWebSocketHandler extends TextWebSocketHandler {
             session.close();
         else {
             template.opsForValue().set("websocketUser:" + userTel, phpSessId);
+            // 设置失效时间
+            template.expire("websocketUser:" + userTel, 60 * 15 - 1, TimeUnit.SECONDS);
             // 添加websocket连接sessionId
             template.opsForSet().add("websocketUserInfo:" + userTel, session.getId());
             // 设置失效时间
@@ -60,7 +62,8 @@ public class TelecomWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         System.out.println(session.getId() + "关闭连接");
         // 删除断开连接的websocket相关信息
-        template.opsForSet().remove("websocketUserInfo:" + userTel, session.getId());
+        if (template.hasKey("websocketUserInfo:" + userTel))
+            template.opsForSet().remove("websocketUserInfo:" + userTel, session.getId());
         if (template.opsForSet().size("websocketUserInfo:" + userTel) == 0)
             template.delete("websocketUser:" + userTel);
     }

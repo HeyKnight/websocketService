@@ -22,7 +22,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(telecomWebSocketHandler(), "/websocket")
-                .setAllowedOrigins("http://127.0.0.1:8088")    // 设置访问来源
+                .setAllowedOrigins("*")    // 设置访问来源
                 .withSockJS();
     }
 
