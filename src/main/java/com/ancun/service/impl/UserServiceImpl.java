@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
 /**
- * 用户实现类
+ * 用户相关实现类
  *
  * @author jarvan [NO.0051]
  * @since 2017年01月15日 17:05
